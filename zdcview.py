@@ -18,13 +18,15 @@ class Example(QMainWindow,Ui_MainWindow):
     def __init__(self):
         super(Example,self).__init__()
         self.setupUi(self)
-        self.initUI()
+        self.init_ui()
         self.flag_org_pr = False
 
     def closeEvent(self, event):
+        print(event)
         sys.exit(0)
 
-    def initUI(self):
+    def init_ui(self):
+        ''' 关联处理函数 '''
 
         self.openMenu.triggered.connect(self.open_zdc)
         self.btn_Update_Tree.clicked.connect(self.update_tab)
@@ -42,7 +44,7 @@ class Example(QMainWindow,Ui_MainWindow):
         self.midleft.setHeaderLabels(['TAB','DID', 'Teil', 'Desc','Data'])  # 设置头部信息对应列的标识符
         self.midleft.setSortingEnabled(True)
         self.midleft.setColumnWidth(0,60)
-        self.midleft.setColumnWidth(1,40)
+        self.midleft.setColumnWidth(1,40)        
 
         self.midleft.setContextMenuPolicy(Qt.CustomContextMenu)  # 打开右键菜单的策略
         self.midleft.customContextMenuRequested.connect(self.tree_tab_menu)  # 绑定事件
@@ -50,18 +52,13 @@ class Example(QMainWindow,Ui_MainWindow):
         self.pop_menu = QMenu()
         self.pop_menu.addAction(QAction(u'计算', self))
         self.pop_menu.addAction(QAction(u'导出', self))
-        self.pop_menu.triggered[QAction].connect(self.processtrigger)
-
-
+        self.pop_menu.triggered.connect(self.processtrigger)
 
         # PRNR树
         self.botleft.setColumnCount(2)  # 设置部件的列数为2
         self.botleft.setDropIndicatorShown(True)
         self.botleft.setHeaderLabels(['FAM', 'PR'])  # 设置头部信息对应列的标识符
         self.botleft.itemChanged.connect(self.tree_pr_changed)
-
-
-
 
         ##################
 
@@ -97,6 +94,7 @@ class Example(QMainWindow,Ui_MainWindow):
             print(tab.find("MODUSTEIL").text)
 
             child = QTreeWidgetItem(self.midleft)
+            child.setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable)
 
             #加载类型
             child.setText(0, tab.find("MODUS").text)
@@ -312,7 +310,7 @@ class Example(QMainWindow,Ui_MainWindow):
             # 查找对应的表格
             for tabelle in tabelles:
                 if tabelle.find("MODUSTEIL").text == str_teil:
-                    
+
                     # 是参数吗？
                     if item.text(0) == 'P':
                         # 有效参数
@@ -330,7 +328,7 @@ class Example(QMainWindow,Ui_MainWindow):
                         list_coding = [] # 初始编码
 
                         # 遍历每个字节
-                        kopf = tabelle.find("KOPF")
+                        #kopf = tabelle.find("KOPF")
                         for zde in tabelle.findall(".//KOPF//ZDE"):
                             zdstelle=zde.find("ZDSTELLE").text # Byte
 
@@ -404,7 +402,6 @@ class Example(QMainWindow,Ui_MainWindow):
 
 
 
-            
 
 
 
