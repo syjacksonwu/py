@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data>
+    <fam name="AAU" des_de="Aktionsausführungen" des_cn="">
+		<pr name="E0A" des_de="Keine Aktionsausführung" des_cn="无特殊装备"/>
+    </fam>
+    <fam name="AIB" des_de="Airbag" des_cn="" >
+        <pr name="4UE" des_de="Airbag für Fahrer und Beifahrer" des_cn="驾驶员和副驾驶员侧安全气囊"/>
+		<pr name="4UH" des_de="Airbag für Fahrer und Beifahrer mit Knieairbag" des_cn="驾驶员和副驾驶员侧安全气囊，带膝部安全气囊"/>
+    </fam>
+
+</data>

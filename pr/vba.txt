@@ -1,0 +1,49 @@
+
+Public Sub xml()
+
+    Set xmldoc = CreateObject("Microsoft.XMLDOM")
+    'xmldoc.Load (".\\d_excel.xml")
+    
+    'Set root_node = xmldoc.DocumentElement
+    Set root_node = xmldoc.createElement("data")
+    Set xmldoc.DocumentElement = root_node
+    
+            
+    For i = 1 To 561 Step 1
+        If i = 55 Then
+            j = i
+        End If
+        
+        If Worksheets("data").Cells(i, 2).Value = "" Then
+            ' fam
+            fam = Worksheets("data").Cells(i, 1).Value
+            
+            Set fam_node = xmldoc.createElement("fam")
+            fam_node.setAttribute "name", fam
+            fam_node.setAttribute "des_de", Cells(i, 3).Value
+            fam_node.setAttribute "des_cn", Cells(i, 4).Value
+            root_node.AppendChild fam_node
+            
+            i = i + 1
+            ' pr
+            Do While Worksheets("data").Cells(i, 2).Value <> ""
+                pr = Worksheets("data").Cells(i, 2).Value
+                
+                Set pr_node = xmldoc.createElement("pr")
+                pr_node.setAttribute "name", pr
+                pr_node.setAttribute "des_de", Cells(i, 3).Value
+                pr_node.setAttribute "des_cn", Cells(i, 4).Value
+                fam_node.AppendChild pr_node
+                
+                i = i + 1
+            Loop
+            i = i - 1
+        
+        End If
+    Next i
+   
+    xmldoc.Save (ActiveWorkbook.Path + "\pr.xml")
+    
+End Sub
+
+

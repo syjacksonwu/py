@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>		
+<!--DOCTYPE ZDC SYSTEM 'ZDC020401.DTD'-->		
+<!ELEMENT ZDC  (IDENT,INFO,VORSCHRIFT) >	<!--DOKU Basisknoten -->	
+<!ELEMENT IDENT  (DATEINAME,DATEIID,VERSION-TYP,VERSION-INHALT,DATUM,BESCHREIBUNG,CNT-CHECKSUMME) >	<!--DOKU Indentifikation der Datei -->	
+<!ELEMENT DATEINAME  (#PCDATA) >	<!--DOKU Dateiname -->	<!--WERT Dateiname ohne Pfadangabe -->
+<!ELEMENT DATEIID  (#PCDATA) >	<!--DOKU ID -->	<!--WERT Verkuerzter Dateiname, Teilenummer -->
+<!ELEMENT VERSION-TYP  (#PCDATA) >	<!--DOKU Version des Containertyps -->	<!--WERT Wert:'0201' fuer diesen Container --> 
+<!ELEMENT VERSION-INHALT  (#PCDATA) >	<!--DOKU Version des Containerinhalts -->	<!--WERT 4stellig numerisch mit fuehrenden Nullen -->
+<!ELEMENT DATUM  (#PCDATA) >	<!--DOKU Datum der Containererstellung -->	<!--WERT Format: JJJJ-MM-TT-->
+<!ELEMENT BESCHREIBUNG  (#PCDATA) >	<!--DOKU Beschreibung nur fuer den menschlichen Leser -->	<!--WERT beliebiger erlaeuternder Text-->
+<!ELEMENT CNT-CHECKSUMME  (#PCDATA) >	<!--DOKU CRC ueber den gesamten Container -->	<!--WERT CRC nach Ripemd-160 ueber den gesamten Container ohne die Checksumme selbst (incl. Aller Whitespaces)-->
+<!ELEMENT INFO  (ADRESSEN) >	<!--DOKU Zusatzinformationen fuer den Anwender -->	
+<!ELEMENT ADRESSEN  (ADRESSE+) >	<!--DOKU uebergeordnetes Tag fuer alle Kontaktadressen, moeglichst 1 Ansprechpartner bei VW, Tochter und Zulieferer -->	
+<!ELEMENT ADRESSE  (FIRMA,ABTEILUNG,FUNKTION,MITARBEITER,TELEFON,MOBILE,FAX,EMAIL) >	<!--DOKU eine Kontaktadressen -->	
+<!ELEMENT FIRMA  (#PCDATA) >	<!--DOKU FIRMA  der Kontaktperson -->	<!--WERT offizieller Firmenname -->
+<!ELEMENT ABTEILUNG  (#PCDATA) >	<!--DOKU ABTEILUNG  der Kontaktperson -->	<!--WERT offizielle Abteilungsbezeichnung -->
+<!ELEMENT FUNKTION  (#PCDATA) >	<!--DOKU FUNKTION  der Kontaktperson -->	<!--WERT Funktion des Ansprechpartners -->
+<!ELEMENT MITARBEITER  (#PCDATA) >	<!--DOKU Name der Kontaktperson -->	<!--WERT Name des Ansprechpartners -->
+<!ELEMENT TELEFON  (#PCDATA) >	<!--DOKU TELEFON  der Kontaktperson -->	<!--WERT +Country-Area-Hauptanschluss-Nebenstelle -->
+<!ELEMENT MOBILE  (#PCDATA) >	<!--DOKU MOBILE  der Kontaktperson -->	<!--WERT +Country-Area-Hauptanschluss-Nebenstelle -->
+<!ELEMENT FAX  (#PCDATA) >	<!--DOKU FAX  der Kontaktperson -->	<!--WERT +Country-Area-Hauptanschluss-Nebenstelle -->
+<!ELEMENT EMAIL  (#PCDATA) >	<!--DOKU EMAIL  der Kontaktperson -->	<!--WERT Email, kein Outlook -->
+<!ELEMENT VORSCHRIFT  (VERWEISE|DIREKT) >	<!--DOKU Basisknoten der Bedatungsvorschrift -->	
+<!ELEMENT VERWEISE  (DATEINAME+) >	<!--DOKU Verweis auf einen anderen Container -->	
+<!ELEMENT DIREKT  (DIAGN+,TABELLEN,DATENBEREICHE?) >	<!--DOKU Basisknoten fuer die Bedatungsvorschriften in diesem Container -->	
+<!ELEMENT DIAGN  (BUS,ADR,KWP?,TP?,VERWSTELLE?,DIAGN?) >	<!--DOKU Weg zum Steuergeraet ueber die Diagnosebusse. Der Knoten ist rekursiv, um den Weg durch alle Subbbusse bis zum Steuergraet beschreiben zu koennen -->	
+<!ELEMENT BUS  (#PCDATA) >	<!--DOKU Diagnosebus -->	<!--WERT z.B. CAN, LIN, MOST -->
+<!ELEMENT ADR  (#PCDATA) >	<!--DOKU Diagnoseadresse oder Subbusteilnehmernummer -->	<!--WERT Adresse hexadezimal -->
+<!ELEMENT KWP  (#PCDATA) >	<!--DOKU Diagnoseprotokoll -->	<!--z.B. KWP1281, KWP2000, KWP2000/22, UDS-->
+<!ELEMENT TP  (#PCDATA) >	<!--DOKU Transportprotokoll -->	<!--WERT TP2.0, ISO, ISOTP... -->
+<!ELEMENT VERWSTELLE (#PCDATA) >	<!--DOKU name der Verwendungsstelle um ggf. einen von mehrerern Diagnoseknoten ansprechen zu koennen -->	<!--WERT z.B. TSGHintenLinks... -->
+<!ELEMENT TABELLEN  (REFERENZ,VARIABLEN?,TABELLE+) >	<!--DOKU Basisknoten fuer Bedatungsvorschriften -->	
+<!ELEMENT REFERENZ  (REFFAM+) >	<!--DOKU Basisknoten fuer eine Referenzierung der im Container verwendeten PR-Nummern und Familien -->	
+<!ELEMENT REFFAM  (FAMNR,PRNR+) >	<!--DOKU Basisknoten fuer eine Referenz, bestehend aus einem Familiennamen und allen verwendeten Mitgliedern in alphabetischer Reihenfolge (ASCII, nur Grossbuchstaben und Zahlen) -->	
+<!ELEMENT VARIABLEN  (VARIABLE+) >	<!--DOKU Basisknoten fuer Variablen, die von dem Bandenderechner an die Datenzuweisungstabellen uebergeben werden koennen. Diese Datenuebergabe sind fuer Messwerte bestimmt, die waehrend des Produktionsprozesses ermittelt werden -->	
+<!ELEMENT VARIABLE  (VARNAME,VARTYP,VARMINWERT?,VARMAXWERT?) >	<!--DOKU Basisknoten fuer eine Variable -->	
+<!ELEMENT VARNAME  (#PCDATA) >	<!--DOKU Variablenname -->	<!--WERT Der Variabelnname muss bei INTEGER Variablen in der Tabelle noch H oder L erweitert werden, um Highbyte oder Lowbyte zu spezifizieren (LONG HH,HL,LH,LL) -->
+<!ELEMENT VARTYP  (#PCDATA) >	<!--DOKU Variablentyp (immer UNSIGNED) -->	<!--WERT CHR, INTEGER, LONG -->
+<!ELEMENT VARMINWERT  (#PCDATA) >	<!--DOKU minimal zulaessiger Wert (default 0) -->	<!--WERT hexadezimal ohne $ oder 0x (Motoraola-Schreibweise) -->
+<!ELEMENT VARMAXWERT  (#PCDATA) >	<!--DOKU maximal zulaessiger Wert (default FF,FFFF,FFFFFFFF) -->	<!--WERT hexadezimal ohne $ oder 0x (Motoraola-Schreibweise) -->
+<!ELEMENT TABELLE  (MODUS,MODUSTEIL,BESCHREIBUNG,ZAHLENBASIS,SERVICEID?,RDIDENTIFIER?,KOPF,TAB) >	<!--DOKU Basisknoten fuer Datenzuweisungstabellen, PR-Nummernzuordnungen stehen nur in den Tabellen, nicht in den Datenbereichen -->	
+<!ELEMENT MODUS  (#PCDATA) >	<!--DOKU Bedatungsverfahren -->	<!--A=Anpassung / C=Codierung / F=Flashen(Updateprogrammierung) / P=Programierung / K=Kalibrierung -->
+<!ELEMENT MODUSTEIL  (#PCDATA) >	<!--DOKU Jedesfalls Bedatungsverfahren kann in mehrere Schritte unterteilt werden. So kann an einem Pruefort mehrmals programmiert werden, oder der Container an unterschiedlichen Orten benutzt werden.-->	<!--WERT alphanumerischer Ausdruck -->
+<!ELEMENT ZAHLENBASIS  (#PCDATA) >	<!--DOKU Zahlenbasis, zu der der Tabellenwert ausgerechtnet wird. Bis auf Codierwerte werden alle Zahlen byteweise berechnet, dies bedeutet Zahlenbasis 1.-->	<!--WERT Modus A, F, P: 1 /  Modus C: 10, 256: kurze Codierung /  Modus C: 1: lange Codierung -->
+<!ELEMENT SERVICEID  (#PCDATA) >	<!--DOKU Service Identifier, der beim Modus K den zu verwendenden Dienst festlegt. Aus Xml-Sicht optional, da nur im Modus K verwendet. Für den Modus K jedoch zwingend erforderlich.-->	<!--hexadezimal ohne $ oder 0x (Motorola-Schreibweise), z.B. 2E -->
+<!ELEMENT RDIDENTIFIER  (#PCDATA) >	<!--DOKU Datenart Identifier. Wird nur im Modus K verwendet. Aus Xml-Sicht optional, da nur im Modus K verwendet. Für den Modus K jedoch zwingend erforderlich.-->	<!--hexadezimal ohne $ oder 0x (Motorola-Schreibweise), z.B. 06A0-->
+<!ELEMENT KOPF  (ZDE+) >	<!--DOKU Der Tabellenkopf gibt die Bedeutung der einzelnen in das Steuergeraet geschriebenen Daten wieder. Je detaiierter die Bits und Bytes hier beschreiben werden, desto einfacher ist die Beschreibung der Verknuepfungen mit den Teilegueltigkeiten..-->	
+<!ELEMENT ZDE  (ZDSTELLE,ZDBYTE+) >	<!--DOKU Die Zieldateneinheit besteht aus der Stelle des Codierwortes/ Programmieradresse/ Anpasskanal und der detaillierten Aufschluesselung derselben -->	
+<!ELEMENT ZDSTELLE  (#PCDATA) >	<!--DOKU Stelle des Codierwortes/ Programmieradresse/ Anpasskanal / Updatedatensatz -->	<!--WERT Modus A: Anpasskanal /  Modus F: Updatedatensatz(1,2,...) /  Modus P: Programieradresse /  Modus C und Zahlenbasis 1: 1,2,3,.. /  Modus C und Zahlenbasis 10 od. 256: ...,2,1,0 -->
+<!ELEMENT ZDBYTE  (ZMSB,ZLSB,ZBEZ?) >	<!--DOKU Detaillierte Beschreibung des Bytes/ der Stelle. Jedes Byte kann in Bit-Bereiche unterteilt werden. Jeder Bit-Bereich wird durch das niederwertige Bit (LSB) und hoeherwertige Bit (MSB) beschrieben. -->	
+<!ELEMENT ZMSB  (#PCDATA) >	<!--DOKU hoeherwertiges Bit des Bitbereichs -->	<!--WERT 0,1,2,3,4,5,6,7: ZMSB &gt;= ZLSB -->
+<!ELEMENT ZLSB  (#PCDATA) >	<!--DOKU niederwertiges Bit des Bitbereichs -->	<!--WERT 0,1,2,3,4,5,6,7: ZLSB &lt;= ZMSB -->
+<!ELEMENT ZBEZ  (#PCDATA) >	<!--DOKU Beschreibung des Bit-Bereichs wie im Diagnoselastenheft -->	<!--WERT Text -->
+<!ELEMENT TAB  (FAM+) >	<!--DOKU Basisknoten fuer PR-Nummernzuordnungen -->	
+<!ELEMENT FAM  (FAMNR,FAMBEZ?,TEGUE+) >	<!--DOKU Basisknoten fuer PR-Nummernzuordnungen innerhalb einer PR-Familie/Gruppe -->	
+<!ELEMENT FAMNR  (#PCDATA) >	<!--DOKU PR-Familie oder Kombination von PR-Familien gemaess MBT -->	<!--WERT dreistellige Familien-Bezeichnung lt. MBT /  mehrere Familien werden mit '+' verbunden, kein fuehrendes '+' vor der ersten Familie. Wahlweise Familien '/' sind nicht zulaessig -->
+<!ELEMENT FAMBEZ  (#PCDATA) >	<!--DOKU PR-Familien-Bezeichnung gemaess MBT in der Sprache des Erstellers. Jedes Lesegeraet kann die Texte in Landessprache auf dem Display anzeigen. -->	<!--WERT Text -->
+<!ELEMENT TEGUE (PRNR,PRBEZ?,KNOTEN+) >	<!--DOKU Beschreibung einer Teilegueltigkeit mit allen Verknuepfungen (Knoten) mit den Zieldateneinheiten -->	
+<!ELEMENT PRNR  (#PCDATA) >	<!--DOKU PR-Nummern oder Kombination von PR-Nummern gemaess MBT, Schreibweise wie in VW-Stuecklisten, fuehrendes '+' kann entfallen -->	<!--WERT Teilegueltigkeit, fuehrendes '+' kann entfallen -->
+<!ELEMENT PRBEZ  (#PCDATA) >	<!--DOKU PR-Familien-Bezeichnung gemaess MBT in der Sprache des Erstellers. Jedes Lesegeraet kann die Texte in Landessprache auf dem Display anzeigen. -->	<!--WERT Text -->
+<!ELEMENT KNOTEN  (STELLE,LSB,(WERT|DATEINAME|DATEN-NAME|VARNAME|FEHLER|UNGUELTIG|UEBERSPRINGEN)) >	<!--DOKU Verknuepfung zwischen Teilegueltigkeit und Zieldateneinheit (ZDE bzw. ZDBYTE) -->	
+<!ELEMENT STELLE  (#PCDATA) >	<!--DOKU Verknuepfung verweist auf ZDSTELLE -->	<!--WERT siehe ZDSTELLE -->
+<!ELEMENT LSB  (#PCDATA) >	<!--DOKU Verknuepfung verweist auf ZLSB -->	<!--WERT siehe ZLSB -->
+<!ELEMENT WERT  (#PCDATA) >	<!--DOKU Wert, den die Verknuepfung zu dem Zieldatenbyte beitraegt -->	<!--WERT ZMSB-ZLSB=0: 0..1 /  ZMSB-ZLSB=1: 0..3 /  ZMSB-ZLSB=2: 0..7 /  ZMSB-ZLSB=3: 0..F /  ZMSB-ZLSB=4: 0..1F / .. ZMSB-ZLSB=7: 0..FF -->
+<!ELEMENT FEHLER  (#PCDATA) >	<!--DOKU Wenn dieses Feld ausgewaehlt wird, muss eine Fehlermeldung ausgegeben werden -->	<!--Inhalt der Fehlermeldung z.B. Codierung fuehrt zu Kurzschluss -->
+<!ELEMENT UNGUELTIG  (#PCDATA) >	<!--DOKU Wenn dieses Feld ausgewaehlt wird, muss eine Fehlermeldung ausgegeben werden -->	<!--Inhalt der Fehlermeldung, z.B. Kombination im Bauprogramm nicht vorgesehen, Kombination nicht erprobt, o.ae. -->
+<!ELEMENT UEBERSPRINGEN (#PCDATA) >	<!--DOKU Wenn dieses Feld ausgewaehlt wird, muss der entsprechende Parametrieranteil übersprungen werden-->	<!--Kommentar z.B. bei Low Line nicht können Standardwerte erhalten bleiben -->
+<!ELEMENT DATENBEREICHE  (DATENBEREICH+) >	<!--DOKU Basisknoten fuer Programmier- und Flash- Datenbereiche -->	
+<!ELEMENT DATENBEREICH  (DATEN-NAME,ROHTEILENUMMER?,FERTIGTEILENUMMER?,KANAL?,DATEN-FORMAT-NAME,START-ADR?,DATEN-INTERN-FORMAT?,GROESSE-DEKOMPRIMIERT?,LOESCH-BEREICH?,DATEN-CHECK?,(DATEN+|DATEINAME)) >	<!--DOKU Basisknoten fuer einen Programmier- oder Flash- Datenbereich (Verweis auf anderen Container moeglich)-->	
+<!ELEMENT DATEN-NAME  (#PCDATA) >	<!--DOKU Referenz innerhalb des Containers fuer Programmier- oder Flashdaten -->	<!--WERT PRG_* /  *: beliebieger alphanumerischer Ausdruck -->
+<!ELEMENT ROHTEILENUMMER  (#PCDATA) >	<!--DOKU Falls die Programmierung eine Teilnummernaenderung bewirkt, Teilnummer vor der Programmierung bzw. oder Rohteilnummer aus KWP2000 Dienst 911A -->	<!--WERT Teilnummer in KVS-Schreibweise z.B. .7H0.959.433.AB -->
+<!ELEMENT FERTIGTEILENUMMER  (#PCDATA) >	<!--DOKU Falls die Programmierung eine Teilnummernaenderung bewirkt, Teilnummer nach der Programmierung aus KWP2000 Dienst 1A9B -->	<!--WERT Teilnummer in KVS-Schreibweise z.B. .7H0.959.433.AB -->
+<!ELEMENT KANAL  (#PCDATA) >	<!--DOKU  -->	
+<!ELEMENT DATEN-FORMAT-NAME  (#PCDATA) >	<!--DOKU Angabe des Datenformats des Elements DATEN -->	<!--WERT DFN_MIME: Mimeformat /  DFN_HEX: Hex-Werte in C-Nomenklatur /  DFN_BYTE: Hex-Werte in Motorola-Schreibweise (koennen durch Spaces getrennt werden) -->
+<!ELEMENT START-ADR  (#PCDATA) >	<!--DOKU Startadresse des zu programmierenden Bereichs -->	<!--WERT hexadezimal ohne $ oder 0x (Motoraola-Schreibweise) -->
+<!ELEMENT END-ADR  (#PCDATA) >	<!--DOKU Endadresse des zu programmierenden Bereichs -->	<!--WERT hexadezimal ohne $ oder 0x (Motoraola-Schreibweise) -->
+<!ELEMENT DATEN-INTERN-FORMAT  (#PCDATA) >	<!--DOKU  -->	
+<!ELEMENT GROESSE-DEKOMPRIMIERT  (#PCDATA) >	<!--DOKU Laenge des im Steuergeraet dekomprimierten programmierten Bereichs -->	<!--WERT hexadezimal ohne $ oder 0x (Motoraola-Schreibweise) -->
+<!ELEMENT LOESCH-BEREICH  (START-ADR,END-ADR) >	<!--DOKU Vor dem Programmieren zu loeschender Bereich -->	
+<!ELEMENT DATEN-CHECK  (START-ADR,END-ADR,CHECKSUMME) >	<!--DOKU Nach dem Programmieren zu ueberpruefender Bereich -->	
+<!ELEMENT CHECKSUMME  (#PCDATA) >	<!--DOKU CRC ueber den zu programmierenden Datenbereich gemaess steuergeraeteinterner Berechnung -->	<!--WERT hexadezimal ohne $ oder 0x (Motoraola-Schreibweise) -->
+<!ELEMENT DATEN  (#PCDATA) >	<!--DOKU Zu programmierende Zieldaten -->	<!--WERT siehe DATEN-FORMAT-NAME -->
