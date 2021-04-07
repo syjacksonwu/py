@@ -44,11 +44,11 @@ class Example(QMainWindow,Ui_MainWindow):
         self.midleft.setHeaderLabels(['TAB','DID', 'Teil', 'Desc','Data'])  # 设置头部信息对应列的标识符
         self.midleft.setSortingEnabled(True)
         self.midleft.setColumnWidth(0,60)
-        self.midleft.setColumnWidth(1,40)        
+        self.midleft.setColumnWidth(1,40)
 
+        # 右键菜单
         self.midleft.setContextMenuPolicy(Qt.CustomContextMenu)  # 打开右键菜单的策略
         self.midleft.customContextMenuRequested.connect(self.tree_tab_menu)  # 绑定事件
-
         self.pop_menu = QMenu()
         self.pop_menu.addAction(QAction(u'计算', self))
         self.pop_menu.addAction(QAction(u'导出', self))
@@ -94,7 +94,7 @@ class Example(QMainWindow,Ui_MainWindow):
             print(tab.find("MODUSTEIL").text)
 
             child = QTreeWidgetItem(self.midleft)
-            child.setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable)
+            child.setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable)
 
             #加载类型
             child.setText(0, tab.find("MODUS").text)
@@ -165,7 +165,7 @@ class Example(QMainWindow,Ui_MainWindow):
             print(self.filename + ' Not Exsit.')
             return
 
-        tree = etree.parse(self.filename)
+        tree = ET.parse(self.filename)
         root = tree.getroot()
         tabellen = root.find(".//TABELLEN")
         tabelles = root.findall(".//TABELLE")
@@ -216,7 +216,7 @@ class Example(QMainWindow,Ui_MainWindow):
                 for pr in prnr:
 
                     # 组合PR号，继续细分
-                    if '/' in pr:                                       
+                    if '/' in pr:
                         sub_res = False  # 任何一个存在，则通过
                         for subpr in pr.split('/'):
                             if self.tree_pr_checked(self.botleft,subpr) == True:
@@ -294,6 +294,21 @@ class Example(QMainWindow,Ui_MainWindow):
             self.pop_menu.exec_(QCursor.pos())
 
 
+    def prnr_in_order(self, prnr):
+        ''' 检查pr号是否在订单里面'''
+
+        #for item in self.textEdit.toPlainText().split('+'):
+        for pr in prnr.split('+'):
+            print(pr)
+            if '/' in pr:
+                for sub_pr in pr.split('/'):
+                    if sub_pr in self.textEdit.toPlainText():
+                        return True
+            else:
+                return pr in self.textEdit.toPlainText()
+
+        return False
+
     def processtrigger(self, q):
         '''#判断是项目节点还是任务节点'''
 
@@ -302,7 +317,7 @@ class Example(QMainWindow,Ui_MainWindow):
         str_teil=item.text(2) #MODUSTEIL
 
         if command=="计算":
-            self.pop_menu.close()            
+            self.pop_menu.close()
 
             # 提取所有表
             root = self.tree.getroot()
@@ -313,6 +328,10 @@ class Example(QMainWindow,Ui_MainWindow):
 
                     # 是参数吗？
                     if item.text(0) == 'P':
+                        # 检查所有TEGUE
+                        #for tegue in tabelle.findall(".//TAB//FAM//TEGUE"):
+                            # 有效PR号？
+
                         # 有效参数
                         if tabelle.findall(".//TAB//FAM//TEGUE//KNOTEN//DATEN-NAME"):
                             for daten in tabelle.findall(".//TAB//FAM//TEGUE//KNOTEN//DATEN-NAME"):
@@ -334,20 +353,25 @@ class Example(QMainWindow,Ui_MainWindow):
 
                             value_byte = 0
                             for zdbyte in zde.findall("ZDBYTE"): # Bit
-                                zmsb=zdbyte.find("ZMSB").text
+                                #zmsb=zdbyte.find("ZMSB").text
                                 zlsb=zdbyte.find("ZLSB").text
 
-                                #寻找wert
-                                for knoten in tabelle.findall(".//TAB//FAM//TEGUE//KNOTEN"):
-                                    if knoten.find("STELLE").text == zdstelle: #Byte
-                                        if knoten.find("LSB").text == zlsb: #Bit
-                                            wert = knoten.find("WERT").text
-                                            break
+                                #寻找TEGUE->KNOTEN->WERT
+                                for tegue in tabelle.findall(".//TAB//FAM//TEGUE"):
 
-                                value_byte = value_byte + int(wert,16)*(2**int(zlsb,16))
-                                #print("%s %s %s %s" %(zdstelle, zmsb, zlsb, wert))
-                            print("%s %02X" %(zdstelle, value_byte))
-                            list_coding.append(value_byte)
+                                    print(tegue.find(".//PRNR").text)
+                                    # prnr在订单里面吗？
+                                    if self.prnr_in_order(tegue.find(".//PRNR").text):
+                                        for knoten in tegue.findall(".//KNOTEN"):
+                                            if knoten.find("STELLE").text == zdstelle: #Byte
+                                                if knoten.find("LSB").text == zlsb: #Bit
+                                                    wert = knoten.find("WERT").text
+                                                    break
+
+                                        value_byte = value_byte + int(wert,16)*(2**int(zlsb,16))
+                                        #print("%s %s %s %s" %(zdstelle, zmsb, zlsb, wert))
+                                        print("%s %02X" %(zdstelle, value_byte))
+                                        list_coding.append(value_byte)
 
                         # 输出计算结果
                         list_hex = ['%02X' %i for i in list_coding]
@@ -670,7 +694,7 @@ class Example(QMainWindow,Ui_MainWindow):
 
                 str_prnr = ""
                 for prnr in fam.findall("PRNR"):
-                    str_prnr = str_prnr + prnr.text + " " 
+                    str_prnr = str_prnr + prnr.text + " "
                     print("\t",prnr.text)
                 #self.botleft.append(str_prnr)
 
