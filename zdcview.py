@@ -52,7 +52,7 @@ class Example(QMainWindow,Ui_MainWindow):
         self.pop_menu = QMenu()
         self.pop_menu.addAction(QAction(u'计算', self))
         self.pop_menu.addAction(QAction(u'导出', self))
-        self.pop_menu.triggered.connect(self.processtrigger)
+        self.pop_menu.triggered.connect(self.process_trigger)
 
         # PRNR树
         self.botleft.setColumnCount(2)  # 设置部件的列数为2
@@ -309,78 +309,86 @@ class Example(QMainWindow,Ui_MainWindow):
 
         return False
 
-    def processtrigger(self, q):
+
+    def trigger_caculate(self,item):
+        '''右键菜单 计算'''
+
+        str_teil=item.text(2) #MODUSTEIL
+
+        # 提取所有表
+        root = self.tree.getroot()
+        tabelles = root.findall(".//TABELLE")
+        # 查找对应的表格
+        for tabelle in tabelles:
+            if tabelle.find("MODUSTEIL").text == str_teil:
+
+                # 是参数吗？
+                if item.text(0) == 'P':
+                    # 检查所有TEGUE
+                    #for tegue in tabelle.findall(".//TAB//FAM//TEGUE"):
+                        # 有效PR号？
+
+                    # 有效参数
+                    if tabelle.findall(".//TAB//FAM//TEGUE//KNOTEN//DATEN-NAME"):
+                        for daten in tabelle.findall(".//TAB//FAM//TEGUE//KNOTEN//DATEN-NAME"):
+                            print(daten.text)
+                            item.setText(4, daten.text)
+                    # 无效参数
+                    else:
+                        print("N/A")
+                        item.setText(4, "N/A")
+
+                # 是编码和匹配吗？
+                if item.text(0) == 'K':
+                    list_coding = [] # 初始编码
+
+                    # 遍历每个字节
+                    #kopf = tabelle.find("KOPF")
+                    for zde in tabelle.findall(".//KOPF//ZDE"): #一个zde是一个字节
+                        zdstelle=zde.find("ZDSTELLE").text # Byte
+
+                        value_byte = 0
+                        for zdbyte in zde.findall("ZDBYTE"): # Bit
+                            #zmsb=zdbyte.find("ZMSB").text
+                            zlsb=zdbyte.find("ZLSB").text
+
+                            #寻找TEGUE->KNOTEN->WERT
+                            for tegue in tabelle.findall(".//TAB//FAM//TEGUE"):
+
+                                print(tegue.find(".//PRNR").text)
+                                # prnr在订单里面吗？
+                                if self.prnr_in_order(tegue.find(".//PRNR").text):
+                                    for knoten in tegue.findall(".//KNOTEN"):
+                                        # Check Byte and Check Bit
+                                        if knoten.find("STELLE").text == zdstelle and knoten.find("LSB").text == zlsb:
+                                            wert = knoten.find("WERT").text
+                                            value_byte = value_byte + int(wert,16)*(2**int(zlsb,16))
+                                            break
+
+                        #完成一个字节的计算
+                        #print("%s %s %s %s" %(zdstelle, zmsb, zlsb, wert))
+                        print("%s %02X" %(zdstelle, value_byte))
+                        list_coding.append(value_byte)
+
+                    # 输出计算结果
+                    list_hex = ['%02X' %i for i in list_coding]
+
+                    print("%s: %s" %(str_teil," ".join(list_hex)))
+                    item.setText(4, " ".join(list_hex))
+                    break
+
+
+    def process_trigger(self, sub_menu):
         '''#判断是项目节点还是任务节点'''
 
-        command=q.text()
+        command=sub_menu.text()
         item=self.midleft.currentItem()
         str_teil=item.text(2) #MODUSTEIL
 
         if command=="计算":
             self.pop_menu.close()
-
-            # 提取所有表
-            root = self.tree.getroot()
-            tabelles = root.findall(".//TABELLE")
-            # 查找对应的表格
-            for tabelle in tabelles:
-                if tabelle.find("MODUSTEIL").text == str_teil:
-
-                    # 是参数吗？
-                    if item.text(0) == 'P':
-                        # 检查所有TEGUE
-                        #for tegue in tabelle.findall(".//TAB//FAM//TEGUE"):
-                            # 有效PR号？
-
-                        # 有效参数
-                        if tabelle.findall(".//TAB//FAM//TEGUE//KNOTEN//DATEN-NAME"):
-                            for daten in tabelle.findall(".//TAB//FAM//TEGUE//KNOTEN//DATEN-NAME"):
-                                print(daten.text)
-                                item.setText(4, daten.text)
-                        # 无效参数
-                        else:
-                            print("N/A")
-                            item.setText(4, "N/A")
-
-                    # 是编码和匹配吗？
-                    if item.text(0) == 'K':
-                        list_coding = [] # 初始编码
-
-                        # 遍历每个字节
-                        #kopf = tabelle.find("KOPF")
-                        for zde in tabelle.findall(".//KOPF//ZDE"):
-                            zdstelle=zde.find("ZDSTELLE").text # Byte
-
-                            value_byte = 0
-                            for zdbyte in zde.findall("ZDBYTE"): # Bit
-                                #zmsb=zdbyte.find("ZMSB").text
-                                zlsb=zdbyte.find("ZLSB").text
-
-                                #寻找TEGUE->KNOTEN->WERT
-                                for tegue in tabelle.findall(".//TAB//FAM//TEGUE"):
-
-                                    print(tegue.find(".//PRNR").text)
-                                    # prnr在订单里面吗？
-                                    if self.prnr_in_order(tegue.find(".//PRNR").text):
-                                        for knoten in tegue.findall(".//KNOTEN"):
-                                            if knoten.find("STELLE").text == zdstelle: #Byte
-                                                if knoten.find("LSB").text == zlsb: #Bit
-                                                    wert = knoten.find("WERT").text
-                                                    break
-
-                                        value_byte = value_byte + int(wert,16)*(2**int(zlsb,16))
-                                        #print("%s %s %s %s" %(zdstelle, zmsb, zlsb, wert))
-                                        print("%s %02X" %(zdstelle, value_byte))
-                                        list_coding.append(value_byte)
-
-                        # 输出计算结果
-                        list_hex = ['%02X' %i for i in list_coding]
-
-                        print("%s: %s" %(str_teil," ".join(list_hex)))
-                        item.setText(4, " ".join(list_hex))
-                        break
-
-
+            self.trigger_caculate(item)
+            
 
         if command=="导出":
             self.pop_menu.close()
