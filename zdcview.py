@@ -298,16 +298,24 @@ class Example(QMainWindow,Ui_MainWindow):
         ''' 检查pr号是否在订单里面'''
 
         #for item in self.textEdit.toPlainText().split('+'):
+
+        # 8GU+DG6/D16
         for pr in prnr.split('+'):
             print(pr)
+            # DG6/D16
             if '/' in pr:
+                res = False
                 for sub_pr in pr.split('/'):
                     if sub_pr in self.textEdit.toPlainText():
-                        return True
-            else:
-                return pr in self.textEdit.toPlainText()
+                        res = True
+                        break
+                if not res: # 找到了吗
+                    return False
+            # 8GU
+            elif pr not in self.textEdit.toPlainText():
+                return False
 
-        return False
+        return True
 
 
     def trigger_caculate(self,item):
@@ -353,17 +361,21 @@ class Example(QMainWindow,Ui_MainWindow):
                             zlsb=zdbyte.find("ZLSB").text
 
                             #寻找TEGUE->KNOTEN->WERT
+                            flag_bit_wert = False # 找到这个bit对于的tegue了吗？
                             for tegue in tabelle.findall(".//TAB//FAM//TEGUE"):
-
                                 print(tegue.find(".//PRNR").text)
+                                
                                 # prnr在订单里面吗？
                                 if self.prnr_in_order(tegue.find(".//PRNR").text):
                                     for knoten in tegue.findall(".//KNOTEN"):
                                         # Check Byte and Check Bit
                                         if knoten.find("STELLE").text == zdstelle and knoten.find("LSB").text == zlsb:
+                                            flag_bit_wert = True
                                             wert = knoten.find("WERT").text
                                             value_byte = value_byte + int(wert,16)*(2**int(zlsb,16))
                                             break
+                                if flag_bit_wert:
+                                    break
 
                         #完成一个字节的计算
                         #print("%s %s %s %s" %(zdstelle, zmsb, zlsb, wert))
