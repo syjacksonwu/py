@@ -52,6 +52,7 @@ class Example(QMainWindow,Ui_MainWindow):
         self.pop_menu = QMenu()
         self.pop_menu.addAction(QAction(u'计算', self))
         self.pop_menu.addAction(QAction(u'导出', self))
+        self.pop_menu.addAction(QAction(u'定位', self))
         self.pop_menu.triggered.connect(self.process_trigger)
 
         # PRNR树
@@ -94,7 +95,7 @@ class Example(QMainWindow,Ui_MainWindow):
             print(tab.find("MODUSTEIL").text)
 
             child = QTreeWidgetItem(self.midleft)
-            child.setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable)
+            child.setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable |Qt.ItemIsUserCheckable)
 
             #加载类型
             child.setText(0, tab.find("MODUS").text)
@@ -294,11 +295,11 @@ class Example(QMainWindow,Ui_MainWindow):
             self.pop_menu.exec_(QCursor.pos())
 
 
-    def prnr_in_order(self, prnr):
-        ''' 检查pr号是否在订单里面'''
-
-        #for item in self.textEdit.toPlainText().split('+'):
-
+    def prnr_in_order(self, prnr,order):
+        ''' 检查prnr号是否在订单里面
+        prnr 待检查PR号
+        order 订单
+        '''
         # 8GU+DG6/D16
         for pr in prnr.split('+'):
             print(pr)
@@ -306,7 +307,7 @@ class Example(QMainWindow,Ui_MainWindow):
             if '/' in pr:
                 res = False
                 for sub_pr in pr.split('/'):
-                    if sub_pr in self.textEdit.toPlainText():
+                    if sub_pr in order: #self.textEdit.toPlainText():
                         res = True
                         break
                 if not res: # 找到了吗
@@ -316,6 +317,54 @@ class Example(QMainWindow,Ui_MainWindow):
                 return False
 
         return True
+
+
+    def caculate_tabelle(self,tabelle,order):
+        ''' 根据订单计算某种表格，Coding / Adaption
+        tabelle, 待计算表格
+        order, 订单
+        '''
+
+        list_coding = [] # 初始编码
+
+        # 遍历每个字节
+        #kopf = tabelle.find("KOPF")
+        for zde in tabelle.findall(".//KOPF//ZDE"): #一个zde是一个字节
+            zdstelle=zde.find("ZDSTELLE").text # Byte
+
+            value_byte = 0
+            for zdbyte in zde.findall("ZDBYTE"): # Bit
+                #zmsb=zdbyte.find("ZMSB").text
+                zlsb=zdbyte.find("ZLSB").text
+
+                #寻找TEGUE->KNOTEN->WERT
+                flag_bit_wert = False # 找到这个bit对于的tegue了吗？
+                for tegue in tabelle.findall(".//TAB//FAM//TEGUE"):
+                    print(tegue.find(".//PRNR").text)
+
+                    # prnr在订单里面吗？
+                    if self.prnr_in_order(tegue.find(".//PRNR").text,order):
+                        for knoten in tegue.findall(".//KNOTEN"):
+                            # Check Byte and Check Bit
+                            if knoten.find("STELLE").text == zdstelle and knoten.find("LSB").text == zlsb:
+                                flag_bit_wert = True
+                                wert = knoten.find("WERT").text
+                                value_byte = value_byte + int(wert,16)*(2**int(zlsb,16))
+                                break
+                    if flag_bit_wert:
+                        break
+
+            #完成一个字节的计算
+            #print("%s %s %s %s" %(zdstelle, zmsb, zlsb, wert))
+            #print("%s %02X" %(zdstelle, value_byte))
+            list_coding.append(value_byte)
+
+        return list_coding
+        # 输出计算结果
+        #list_hex = ['%02X' %i for i in list_coding]
+
+        #print("%s: %s" %(str_teil," ".join(list_hex)))
+        #item.setText(4, " ".join(list_hex))
 
 
     def trigger_caculate(self,item):
@@ -328,7 +377,9 @@ class Example(QMainWindow,Ui_MainWindow):
         tabelles = root.findall(".//TABELLE")
         # 查找对应的表格
         for tabelle in tabelles:
-            if tabelle.find("MODUSTEIL").text == str_teil:
+
+            # 找到表格了？
+            if tabelle.find("MODUSTEIL").text == str_teil: 
 
                 # 是参数吗？
                 if item.text(0) == 'P':
@@ -348,6 +399,8 @@ class Example(QMainWindow,Ui_MainWindow):
 
                 # 是编码和匹配吗？
                 if item.text(0) == 'K':
+                    list_coding = self.caculate_tabelle(tabelle,self.textEdit.toPlainText())
+                    '''
                     list_coding = [] # 初始编码
 
                     # 遍历每个字节
@@ -364,9 +417,9 @@ class Example(QMainWindow,Ui_MainWindow):
                             flag_bit_wert = False # 找到这个bit对于的tegue了吗？
                             for tegue in tabelle.findall(".//TAB//FAM//TEGUE"):
                                 print(tegue.find(".//PRNR").text)
-                                
+
                                 # prnr在订单里面吗？
-                                if self.prnr_in_order(tegue.find(".//PRNR").text):
+                                if self.prnr_in_order(tegue.find(".//PRNR").text, self.textEdit.toPlainText()):
                                     for knoten in tegue.findall(".//KNOTEN"):
                                         # Check Byte and Check Bit
                                         if knoten.find("STELLE").text == zdstelle and knoten.find("LSB").text == zlsb:
@@ -381,13 +434,14 @@ class Example(QMainWindow,Ui_MainWindow):
                         #print("%s %s %s %s" %(zdstelle, zmsb, zlsb, wert))
                         print("%s %02X" %(zdstelle, value_byte))
                         list_coding.append(value_byte)
-
+                    '''
                     # 输出计算结果
-                    list_hex = ['%02X' %i for i in list_coding]
+                    if list_coding:
+                        list_hex = ['%02X' %i for i in list_coding]
 
-                    print("%s: %s" %(str_teil," ".join(list_hex)))
-                    item.setText(4, " ".join(list_hex))
-                    break
+                        print("%s: %s" %(str_teil," ".join(list_hex)))
+                        item.setText(4, " ".join(list_hex))
+                break
 
 
     def process_trigger(self, sub_menu):
@@ -400,7 +454,9 @@ class Example(QMainWindow,Ui_MainWindow):
         if command=="计算":
             self.pop_menu.close()
             self.trigger_caculate(item)
-            
+
+        if command=="定位": # 定位到表格
+            self.topright.page().findText(str_teil)
 
         if command=="导出":
             self.pop_menu.close()
